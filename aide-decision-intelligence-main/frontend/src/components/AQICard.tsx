@@ -51,10 +51,10 @@ export function AQICard({ reading, onExpand, isLight = true, isMinimized = false
 
   const pollutants = [
     { name: "PM2.5", val: reading.pm25, unit: "µg/m³", max: 120, safe: 25 },
-    { name: "PM10",  val: reading.pm10,  unit: "µg/m³", max: 250, safe: 50 },
-    { name: "NO₂",   val: reading.no2,   unit: "µg/m³", max: 180, safe: 40 },
-    { name: "O₃",    val: reading.o3,    unit: "µg/m³", max: 180, safe: 60 },
-    { name: "CO",    val: reading.co,    unit: "mg/m³", max: 10,  safe: 2  },
+    { name: "PM10", val: reading.pm10, unit: "µg/m³", max: 250, safe: 50 },
+    { name: "NO₂", val: reading.no2, unit: "µg/m³", max: 180, safe: 40 },
+    { name: "O₃", val: reading.o3, unit: "µg/m³", max: 180, safe: 60 },
+    { name: "CO", val: reading.co, unit: "mg/m³", max: 10, safe: 2 },
   ];
 
   return (
@@ -70,12 +70,12 @@ export function AQICard({ reading, onExpand, isLight = true, isMinimized = false
     >
       {/* Visual Accent */}
       <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: b.color }} />
-      
+
       <div className="p-7 md:p-8">
         {/* Header: Location + Expand */}
         <div className="flex items-start justify-between mb-8">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg" 
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${b.color}, ${b.color}dd)`, color: 'white' }}>
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -87,7 +87,7 @@ export function AQICard({ reading, onExpand, isLight = true, isMinimized = false
                 {reading.station_name}
               </h2>
               <div className="flex items-center gap-2">
-                <span className="text-[12px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md" 
+                <span className="text-[12px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md"
                   style={{ background: isLight ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)", color: textSecondary }}>
                   {reading.zone.replace("_", " ")}
                 </span>
@@ -153,7 +153,7 @@ export function AQICard({ reading, onExpand, isLight = true, isMinimized = false
             const isSafe = p.val <= p.safe;
             const statusLabel = p.val > p.max ? "Hazardous" : p.val > p.safe * 2 ? "High" : p.val > p.safe ? "Moderate" : "Low";
             const statusColor = p.val > p.max ? "#7030a0" : p.val > p.safe * 2 ? "#ef4444" : p.val > p.safe ? "#f59e0b" : "#10b981";
-            
+
             return (
               <div
                 key={p.name}
@@ -162,7 +162,7 @@ export function AQICard({ reading, onExpand, isLight = true, isMinimized = false
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: textSecondary }}>{p.name}</span>
-                  <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" 
+                  <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
                     style={{ background: statusColor + '15', color: statusColor, border: `1px solid ${statusColor}30` }}>
                     {statusLabel}
                   </span>

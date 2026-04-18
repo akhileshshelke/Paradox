@@ -70,7 +70,7 @@ export default function App() {
   const [isCommandMode, setIsCommandMode] = useState(false);
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
   const [viewMode, setViewMode] = useState<string>("overview");
-  
+
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -79,12 +79,12 @@ export default function App() {
 
   const filtered = query.trim().length > 1
     ? stationList
-        .filter(
-          (s) =>
-            s.station_name.toLowerCase().includes(query.toLowerCase()) ||
-            s.zone.toLowerCase().includes(query.toLowerCase())
-        )
-        .slice(0, 8)
+      .filter(
+        (s) =>
+          s.station_name.toLowerCase().includes(query.toLowerCase()) ||
+          s.zone.toLowerCase().includes(query.toLowerCase())
+      )
+      .slice(0, 8)
     : [];
 
   useEffect(() => {
@@ -115,275 +115,218 @@ export default function App() {
       <div className="ambient-orb-alt z-0" style={{ width: 500, height: 500, background: ambient.orb2, bottom: "5%", left: "-5%" }} />
       <div className="ambient-orb z-0" style={{ width: 400, height: 400, background: ambient.orb3, top: "40%", left: "40%", animationDelay: "-8s" }} />
       <div className="relative z-10 flex flex-col flex-1">
-      {/* ── 1. Sticky Navbar ── */}
-      <Navbar
-        regime={live.regime}
-        connected={live.connected}
-        lastTickAt={live.lastTickAt}
-        stations={stationList}
-        selectedId={effectiveSelected}
-        onSelect={setSelectedId}
-        mapTheme={mapTheme}
-        onThemeToggle={() => setMapTheme((p) => (p === "dark" ? "light" : "dark"))}
-        isDSSMode={isDSSMode}
-        onDSSToggle={() => setIsDSSMode(!isDSSMode)}
-        viewMode={viewMode}
-        onViewMode={setViewMode}
-      />
+        {/* ── 1. Sticky Navbar ── */}
+        <Navbar
+          regime={live.regime}
+          connected={live.connected}
+          lastTickAt={live.lastTickAt}
+          stations={stationList}
+          selectedId={effectiveSelected}
+          onSelect={setSelectedId}
+          mapTheme={mapTheme}
+          onThemeToggle={() => setMapTheme((p) => (p === "dark" ? "light" : "dark"))}
+          isDSSMode={isDSSMode}
+          onDSSToggle={() => setIsDSSMode(!isDSSMode)}
+          viewMode={viewMode}
+          onViewMode={setViewMode}
+          query={query}
+          onQueryChange={setQuery}
+          filteredStations={filtered}
+        />
 
-      {/* Fullscreen Map View */}
-      {isMapFullscreen ? (
-        <div className="fixed inset-0 z-[200] flex flex-col bg-slate-900 animate-fadeIn">
-          {/* Prominent Back Button */}
-          <div className="absolute top-8 left-8 z-[210]">
-            <button
-              onClick={() => setIsMapFullscreen(false)}
-              className="group px-7 py-3.5 bg-white text-slate-900 text-[13px] font-black uppercase tracking-widest rounded-2xl shadow-2xl flex items-center gap-3 hover:bg-slate-50 hover:scale-105 active:scale-95 transition-all border border-slate-100"
-            >
-              <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center transition-transform group-hover:-rotate-90">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              Exit Map View
-            </button>
-          </div>
-          
-          <div className="flex-1 relative z-0">
-            <UnifiedMap stations={live.stations} selectedId={effectiveSelected} onSelect={setSelectedId} mapTheme={mapTheme} />
-          </div>
-          <AQIScaleLegend />
-        </div>
-      ) : (
-        <>
-          {/* Floating Prominent Search Bar (Top-Center) */}
-          <div className="fixed top-28 left-1/2 -translate-x-1/2 z-[110] w-full max-w-2xl px-6 animate-fadeIn">
-            <div className="relative group" ref={searchRef}>
-              <div className={`flex items-center gap-5 px-7 py-5 rounded-[32px] border transition-all duration-500 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] backdrop-blur-2xl ${
-                isLight 
-                  ? "bg-white/95 border-slate-200 focus-within:ring-[12px] focus-within:ring-sky-500/10 focus-within:border-sky-400" 
-                  : "bg-[#1b1d24]/95 border-[#3f4354] focus-within:ring-[12px] focus-within:ring-sky-500/20 focus-within:border-sky-500"
-              }`}>
-                <svg className={`w-5 h-5 flex-shrink-0 ${isLight ? "text-slate-400" : "text-slate-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  className={`flex-1 bg-transparent text-base font-bold outline-none placeholder:font-semibold ${isLight ? "text-slate-800 placeholder:text-slate-400" : "text-white placeholder:text-slate-500"}`}
-                  placeholder="Search city, station, or urban zone..."
-                  value={query}
-                  onChange={(e) => { setQuery(e.target.value); setShowResults(true); }}
-                  onFocus={() => setShowResults(true)}
-                />
-                {query && (
-                  <button onClick={() => { setQuery(""); setShowResults(false); }} className="hover:scale-110 transition-transform">
-                    <div className="w-6 h-6 rounded-full bg-slate-200/50 dark:bg-slate-700/50 flex items-center justify-center">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                  </button>
-                )}
-              </div>
-
-              {/* Search Results Dropdown */}
-              {showResults && filtered.length > 0 && (
-                <div className={`absolute top-full mt-3 left-0 right-0 z-[120] rounded-[28px] shadow-2xl border overflow-hidden animate-fadeIn ${isLight ? "bg-white/95 border-slate-200" : "bg-[#1b1d24]/95 border-[#3f4354]"}`}>
-                  <div className="px-6 py-3 border-b text-[10px] font-black uppercase tracking-widest opacity-50">Results</div>
-                  {filtered.map((s) => (
-                    <button
-                      key={s.station_id}
-                      className={`w-full flex items-center justify-between px-6 py-4 text-left transition-all ${
-                        isLight ? "hover:bg-slate-50" : "hover:bg-white/5"
-                      } ${effectiveSelected === s.station_id ? (isLight ? "bg-sky-50" : "bg-sky-900/20") : ""}`}
-                      onClick={() => { setSelectedId(s.station_id); setQuery(s.station_name); setShowResults(false); }}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-inner" 
-                          style={{ background: bandFor(s.aqi).color + '20', color: bandFor(s.aqi).color }}>
-                          {s.aqi}
-                        </div>
-                        <div>
-                          <div className={`text-[15px] font-bold ${isLight ? "text-slate-800" : "text-white"}`}>{s.station_name}</div>
-                          <div className="text-[12px] font-semibold opacity-50 uppercase tracking-wider">{s.zone.replace("_", " ")}</div>
-                        </div>
-                      </div>
-                      <svg className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  ))}
+        {/* Fullscreen Map View */}
+        {isMapFullscreen ? (
+          <div className="fixed inset-0 z-[200] flex flex-col bg-slate-900 animate-fadeIn">
+            {/* Prominent Back Button */}
+            <div className="absolute top-8 left-8 z-[210]">
+              <button
+                onClick={() => setIsMapFullscreen(false)}
+                className="group px-7 py-3.5 bg-white text-slate-900 text-[13px] font-black uppercase tracking-widest rounded-2xl shadow-2xl flex items-center gap-3 hover:bg-slate-50 hover:scale-105 active:scale-95 transition-all border border-slate-100"
+              >
+                <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center transition-transform group-hover:-rotate-90">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </div>
-              )}
+                Exit Map View
+              </button>
             </div>
+
+            <div className="flex-1 relative z-0">
+              <UnifiedMap stations={live.stations} selectedId={effectiveSelected} onSelect={setSelectedId} mapTheme={mapTheme} />
+            </div>
+            <AQIScaleLegend />
           </div>
+        ) : (
+          <>
 
-          <main className="max-w-7xl mx-auto w-full p-4 lg:p-6 pt-24 flex flex-col gap-6 flex-1 relative z-10">
+            <main className="max-w-7xl mx-auto w-full p-4 lg:p-6 pt-24 flex flex-col gap-6 flex-1 relative z-10">
 
-          {/* ── Overview ── */}
-          {viewMode === "overview" && (
-            <div className="flex flex-col gap-6 animate-fadeIn">
+              {/* ── Overview ── */}
+              {viewMode === "overview" && (
+                <div className="flex flex-col gap-6 animate-fadeIn">
 
-              {/* Top row: AQI card (left) + compact map (right) */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  {selected ? (
-                    <AQICard
-                      reading={selected}
-                      onExpand={() => setShowDrillDown(true)}
-                      isLight={isLight}
-                      isMinimized={false}
-                      onToggleMinimize={() => {}}
-                    />
-                  ) : (
-                    <div className="h-64 flex flex-col items-center justify-center rounded-3xl"
-                      style={{ border: `2px dashed ${isLight ? "#cbd5e1" : "#334155"}`, background: isLight ? "rgba(255,255,255,0.5)" : "rgba(20,22,30,0.5)" }}>
-                      <div className="text-4xl mb-3">🌍</div>
-                      <p className="text-sm font-bold" style={{ color: isLight ? "#64748b" : "#94a3b8" }}>Search for a city or station above</p>
+                  {/* Top row: AQI card (left) + compact map (right) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                      {selected ? (
+                        <AQICard
+                          reading={selected}
+                          onExpand={() => setShowDrillDown(true)}
+                          isLight={isLight}
+                          isMinimized={false}
+                          onToggleMinimize={() => { }}
+                        />
+                      ) : (
+                        <div className="h-64 flex flex-col items-center justify-center rounded-3xl"
+                          style={{ border: `2px dashed ${isLight ? "#cbd5e1" : "#334155"}`, background: isLight ? "rgba(255,255,255,0.5)" : "rgba(20,22,30,0.5)" }}>
+                          <div className="text-4xl mb-3">🌍</div>
+                          <p className="text-sm font-bold" style={{ color: isLight ? "#64748b" : "#94a3b8" }}>Search for a city or station above</p>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Compact map preview */}
+                    <div className="lg:col-span-1">
+                      <div className="w-full aspect-square relative rounded-3xl overflow-hidden shadow-xl border group"
+                        style={{ borderColor: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)" }}>
+                        <div className="absolute inset-0 z-0">
+                          <UnifiedMap stations={live.stations} selectedId={effectiveSelected} onSelect={setSelectedId} mapTheme={mapTheme} />
+                        </div>
+                        <div className="absolute top-3 left-3 z-10 pointer-events-none">
+                          <div className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm"
+                            style={{ background: isLight ? "rgba(255,255,255,0.92)" : "rgba(15,23,42,0.92)", color: isLight ? "#0f172a" : "#f8fafc" }}>
+                            India AQI Map
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setIsMapFullscreen(true)}
+                          className="absolute inset-0 w-full h-full bg-black/5 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300 z-20 backdrop-blur-[2px]"
+                          aria-label="Expand Map to Fullscreen"
+                        >
+                          <div className="px-4 py-2 bg-white text-slate-900 text-[12px] font-black uppercase tracking-widest rounded-full shadow-2xl flex items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                            </svg>
+                            Expand
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Full-width Pollutant Breakdown */}
+                  {selected && (
+                    <PollutantCard reading={selected} isLight={isLight} />
                   )}
                 </div>
+              )}
 
-                {/* Compact map preview */}
-                <div className="lg:col-span-1">
-                  <div className="w-full aspect-square relative rounded-3xl overflow-hidden shadow-xl border group"
-                    style={{ borderColor: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)" }}>
-                    <div className="absolute inset-0 z-0">
-                      <UnifiedMap stations={live.stations} selectedId={effectiveSelected} onSelect={setSelectedId} mapTheme={mapTheme} />
+              {viewMode === "forecast" && !selected && (
+                <div className="h-64 flex flex-col items-center justify-center rounded-3xl animate-fadeIn" style={{ border: `2px dashed ${isLight ? "#cbd5e1" : "#334155"}` }}>
+                  <div className="text-4xl mb-3">📈</div>
+                  <p className="text-sm font-bold" style={{ color: isLight ? "#64748b" : "#94a3b8" }}>Search for a location in the navbar to view forecasts</p>
+                </div>
+              )}
+
+              {viewMode === "forecast" && selected && (
+                <div className="flex flex-col gap-6 animate-fadeIn">
+                  <div className="w-full">
+                    <AIPredictionPanel
+                      latest={selected}
+                      forecast={forecast}
+                      isLight={isLight}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-12">
+                    <div className="lg:col-span-1">
+                      <MergedSmartSuggestions
+                        reading={selected}
+                        recommendations={live.recommendations}
+                        isLight={isLight}
+                      />
                     </div>
-                    <div className="absolute top-3 left-3 z-10 pointer-events-none">
-                      <div className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm"
-                        style={{ background: isLight ? "rgba(255,255,255,0.92)" : "rgba(15,23,42,0.92)", color: isLight ? "#0f172a" : "#f8fafc" }}>
-                        India AQI Map
-                      </div>
+                    <div className="lg:col-span-2">
+                      {isDSSMode ? (
+                        <DecisionIntelligenceSystem
+                          reading={selected}
+                          isLight={isLight}
+                          onCommandProtocol={() => setIsCommandMode(true)}
+                        />
+                      ) : (
+                        <div className="h-full rounded-2xl flex items-center justify-center p-6 text-center border" style={{ background: isLight ? "#f8fafc" : "#1e293b", borderColor: isLight ? "#e2e8f0" : "#334155" }}>
+                          <div>
+                            <span className="text-3xl mb-3 block">🏛️</span>
+                            <h3 className="text-sm font-bold mb-1" style={{ color: isLight ? "#334155" : "#cbd5e1" }}>Decision Support System</h3>
+                            <p className="text-xs" style={{ color: isLight ? "#64748b" : "#94a3b8" }}>Enable DSS PRO in the top navigation to view predictive urban analytics & simulation.</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => setIsMapFullscreen(true)}
-                      className="absolute inset-0 w-full h-full bg-black/5 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300 z-20 backdrop-blur-[2px]"
-                      aria-label="Expand Map to Fullscreen"
-                    >
-                      <div className="px-4 py-2 bg-white text-slate-900 text-[12px] font-black uppercase tracking-widest rounded-full shadow-2xl flex items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                        Expand
-                      </div>
-                    </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Full-width Pollutant Breakdown */}
-              {selected && (
-                <PollutantCard reading={selected} isLight={isLight} />
               )}
-            </div>
-          )}
 
-          {viewMode === "forecast" && !selected && (
-            <div className="h-64 flex flex-col items-center justify-center rounded-3xl animate-fadeIn" style={{ border: `2px dashed ${isLight ? "#cbd5e1" : "#334155"}` }}>
-              <div className="text-4xl mb-3">📈</div>
-              <p className="text-sm font-bold" style={{ color: isLight ? "#64748b" : "#94a3b8" }}>Search for a location in the navbar to view forecasts</p>
-            </div>
-          )}
-
-          {viewMode === "forecast" && selected && (
-            <div className="flex flex-col gap-6 animate-fadeIn">
-              <div className="w-full">
-                <AIPredictionPanel
-                  latest={selected}
-                  forecast={forecast}
-                  isLight={isLight}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-12">
-                <div className="lg:col-span-1">
-                   <MergedSmartSuggestions
-                     reading={selected}
-                     recommendations={live.recommendations}
-                     isLight={isLight}
-                   />
+              {viewMode === "rankings" && (
+                <div className="animate-fadeIn">
+                  <RankingSection stations={stationList} onSelect={(id) => { setSelectedId(id); setViewMode("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }} isLight={isLight} />
                 </div>
-                <div className="lg:col-span-2">
-                   {isDSSMode ? (
-                     <DecisionIntelligenceSystem
-                       reading={selected}
-                       isLight={isLight}
-                       onCommandProtocol={() => setIsCommandMode(true)}
-                     />
-                   ) : (
-                     <div className="h-full rounded-2xl flex items-center justify-center p-6 text-center border" style={{ background: isLight ? "#f8fafc" : "#1e293b", borderColor: isLight ? "#e2e8f0" : "#334155" }}>
-                        <div>
-                           <span className="text-3xl mb-3 block">🏛️</span>
-                           <h3 className="text-sm font-bold mb-1" style={{ color: isLight ? "#334155" : "#cbd5e1" }}>Decision Support System</h3>
-                           <p className="text-xs" style={{ color: isLight ? "#64748b" : "#94a3b8" }}>Enable DSS PRO in the top navigation to view predictive urban analytics & simulation.</p>
-                        </div>
-                     </div>
-                   )}
+              )}
+
+              {viewMode === "about" && (
+                <div className="animate-fadeIn pb-12">
+                  <AboutSection isLight={isLight} />
                 </div>
+              )}
+            </main>
+          </>
+        )}
+
+        {/* ── Modals ── */}
+        <CmdKModal stations={stationList} onSelect={setSelectedId} />
+        {showDrillDown && selected && (
+          <CityDrillDownModal
+            reading={selected}
+            forecast={forecast}
+            onClose={() => setShowDrillDown(false)}
+          />
+        )}
+
+        {isCommandMode && selected && (
+          <UrbanCommandCenter
+            station={selected}
+            onClose={() => setIsCommandMode(false)}
+          />
+        )}
+
+        {/* ── Footer ── */}
+        <footer
+          className="mt-auto py-6 px-6 text-center"
+          style={{
+            borderTop: `1px solid ${isLight ? "#e2e8f0" : "#3f4354"}`,
+            background: isLight ? "#f8fafc" : "#1b1d24",
+          }}
+        >
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 21.5c-4.418 0-8-3.582-8-8 0-4.418 8-11.5 8-11.5s8 7.082 8 11.5c0 4.418-3.582 8-8 8z" />
+                </svg>
               </div>
+              <span className="text-[12px] font-bold" style={{ color: isLight ? "#1a202c" : "#f8fafc" }}>
+                Air Quality Intelligence
+              </span>
+              <span className="text-[11px]" style={{ color: isLight ? "#94a3b8" : "#64748b" }}>
+                · Real-time urban air analytics
+              </span>
             </div>
-          )}
-
-          {viewMode === "rankings" && (
-            <div className="animate-fadeIn">
-               <RankingSection stations={stationList} onSelect={(id) => { setSelectedId(id); setViewMode("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }} isLight={isLight} />
+            <div className="text-[11px] font-medium" style={{ color: isLight ? "#94a3b8" : "#64748b" }}>
+              Data refreshes every 60s · India NAQI Standard · Not for medical use
             </div>
-          )}
-
-          {viewMode === "about" && (
-            <div className="animate-fadeIn pb-12">
-               <AboutSection isLight={isLight} />
-            </div>
-          )}
-        </main>
-      </>
-    )}
-
-      {/* ── Modals ── */}
-      <CmdKModal stations={stationList} onSelect={setSelectedId} />
-      {showDrillDown && selected && (
-        <CityDrillDownModal
-          reading={selected}
-          forecast={forecast}
-          onClose={() => setShowDrillDown(false)}
-        />
-      )}
-
-      {isCommandMode && selected && (
-        <UrbanCommandCenter
-          station={selected}
-          onClose={() => setIsCommandMode(false)}
-        />
-      )}
-
-      {/* ── Footer ── */}
-      <footer
-        className="mt-auto py-6 px-6 text-center"
-        style={{
-          borderTop: `1px solid ${isLight ? "#e2e8f0" : "#3f4354"}`,
-          background: isLight ? "#f8fafc" : "#1b1d24",
-        }}
-      >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 21.5c-4.418 0-8-3.582-8-8 0-4.418 8-11.5 8-11.5s8 7.082 8 11.5c0 4.418-3.582 8-8 8z" />
-              </svg>
-            </div>
-            <span className="text-[12px] font-bold" style={{ color: isLight ? "#1a202c" : "#f8fafc" }}>
-              Air Quality Intelligence
-            </span>
-            <span className="text-[11px]" style={{ color: isLight ? "#94a3b8" : "#64748b" }}>
-              · Real-time urban air analytics
-            </span>
           </div>
-          <div className="text-[11px] font-medium" style={{ color: isLight ? "#94a3b8" : "#64748b" }}>
-            Data refreshes every 60s · India NAQI Standard · Not for medical use
-          </div>
-        </div>
-      </footer>
+        </footer>
       </div>
     </div>
   );
@@ -394,11 +337,11 @@ export default function App() {
 function PollutantCard({ reading, isLight }: { reading: any; isLight: boolean }) {
   const pollutants = [
     { name: "PM2.5", value: reading.pm25, unit: "µg/m³", max: 120, color: "#0284c7", icon: "🔵", safe: 25 },
-    { name: "PM10",  value: reading.pm10, unit: "µg/m³", max: 250, color: "#7c3aed", icon: "🟣", safe: 50 },
-    { name: "NO₂",  value: reading.no2,  unit: "µg/m³", max: 180, color: "#d97706", icon: "🟠", safe: 40 },
-    { name: "SO₂",  value: reading.so2,  unit: "µg/m³", max: 80,  color: "#e11d48", icon: "🔴", safe: 20 },
-    { name: "CO",   value: reading.co,   unit: "mg/m³", max: 10,  color: "#16a34a", icon: "🟢", safe: 2  },
-    { name: "O₃",   value: reading.o3,   unit: "µg/m³", max: 180, color: "#0891b2", icon: "🩵", safe: 60 },
+    { name: "PM10", value: reading.pm10, unit: "µg/m³", max: 250, color: "#7c3aed", icon: "🟣", safe: 50 },
+    { name: "NO₂", value: reading.no2, unit: "µg/m³", max: 180, color: "#d97706", icon: "🟠", safe: 40 },
+    { name: "SO₂", value: reading.so2, unit: "µg/m³", max: 80, color: "#e11d48", icon: "🔴", safe: 20 },
+    { name: "CO", value: reading.co, unit: "mg/m³", max: 10, color: "#16a34a", icon: "🟢", safe: 2 },
+    { name: "O₃", value: reading.o3, unit: "µg/m³", max: 180, color: "#0891b2", icon: "🩵", safe: 60 },
   ];
 
   const border = isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.07)";
@@ -498,7 +441,7 @@ function MergedSmartSuggestions({
 
   const aqi = reading?.aqi ?? 0;
   const pm25 = reading?.pm25 ?? 0;
-  
+
   const tip =
     aqi > 300 ? { icon: "🚫", text: "Impose odd-even traffic restrictions immediately. All sensitive groups must stay indoors." }
       : aqi > 250 ? { icon: "🚗", text: "Enforce traffic diversion on hotspot corridors. Suspend construction activities." }
@@ -592,11 +535,11 @@ function AboutSection({ isLight }: { isLight: boolean }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 21.5V10" />
           </svg>
         </div>
-        
+
         <h1 className={`text-4xl lg:text-5xl font-black tracking-tight mb-4 ${textPrim}`}>
           Air Quality <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">Intelligence</span>
         </h1>
-        
+
         <p className={`text-lg lg:text-xl font-medium leading-relaxed max-w-2xl mb-12 ${textMuted}`}>
           An advanced digital twin and analytics platform designed to monitor, simulate, and mitigate urban air pollution through real-time data and AI-driven forecasting.
         </p>
