@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
     app.state.inference = inference
     app.state.scheduler = scheduler
 
-    # Pre-populate 30h of simulated history so forecasts/regimes are warm
+    # Pre-populate some history so forecasts/regimes are warm
     await ingest.warm_up(ticks=120)
     await scheduler.start()
     try:
